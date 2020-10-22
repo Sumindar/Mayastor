@@ -19,13 +19,13 @@
 let
   # Derivation attributes for production version of libspdk
   drvAttrs = rec {
-    version = "20.07";
+    version = "20.10";
 
     src = fetchFromGitHub {
       owner = "openebs";
       repo = "spdk";
-      rev = "b09bed5edaca1d827a6432ca602639d43e3e93a0";
-      sha256 = "0y26p4m99gbnf6iz2vbai26msnry7m428g8q3icpg28izmnk00d1";
+      rev = "515753de3c931575fb7e7d921a9d4e59299eae35";
+      sha256 = "1lc0szrrv7dbqyn9f9z7sbyfvf2d63vmdnqphw7dcvrcv2lsxvs8";
       #sha256 = stdenv.lib.fakeSha256;
       fetchSubmodules = true;
     };
@@ -74,6 +74,7 @@ let
     buildPhase = ''
       make -j`nproc`
       find . -type f -name 'libspdk_event_nvmf.a' -delete
+      find . -type f -name 'libspdk_sock_uring.a' -delete
       find . -type f -name 'libspdk_ut_mock.a' -delete
 
       $CC -shared -o libspdk.so \
