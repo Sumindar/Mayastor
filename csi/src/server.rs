@@ -54,25 +54,6 @@ mod nodeplugin_grpc;
 
 use snafu::Snafu;
 
-#[derive(Debug, Snafu)]
-#[snafu(visibility = "pub(crate)")]
-pub enum CSIError {
-    #[snafu(display("iscsiadm error: {}", error))]
-    Iscsiadm { error: String },
-    #[snafu(display("Cannot find {}", execname))]
-    ExecutableNotFound { execname: String },
-    #[snafu(display("Could not attach disk after {:?}", value))]
-    AttachTimeout { value: std::time::Duration },
-    #[snafu(display("Invalid URI {}", uristr))]
-    InvalidURI { uristr: String },
-    #[snafu(display("Invalid device path {}", devpath))]
-    InvalidDevicePath { devpath: String },
-    #[snafu(display("Not found {}", value))]
-    NotFound { value: String },
-    #[snafu(display("{}", error))]
-    Nvmf { error: String },
-}
-
 #[derive(Debug)]
 struct UnixStream(tokio::net::UnixStream);
 

@@ -78,7 +78,10 @@ async fn fsfreeze(
                     volid: volume_id.to_string(),
                 },
             )?;
-            if mountpaths.is_empty() {
+            // if mount::find_mount didn't return any matches,
+            // but findmnt did, then the volume is a raw block
+            // volume.
+            if !mountpaths.is_empty() {
                 return Err(ServiceError::BlockDeviceMount {
                     volid: volume_id.to_string(),
                 });
