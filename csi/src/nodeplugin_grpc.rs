@@ -13,9 +13,9 @@ use mayastor_node_plugin::{
     FindVolumeRequest,
     FreezeFsReply,
     FreezeFsRequest,
-    MountType,
     UnfreezeFsReply,
     UnfreezeFsRequest,
+    VolumeType,
 };
 
 use nodeplugin_svc::{
@@ -92,10 +92,10 @@ impl MayastorNodePlugin for MayastorNodePluginSvc {
         debug!("find_volume({})", volume_id);
         match find_volume(&volume_id).await? {
             TypeOfMount::FileSystem => Ok(Response::new(FindVolumeReply {
-                mount_type: MountType::Filesystem as i32,
+                volume_type: VolumeType::Filesystem as i32,
             })),
             TypeOfMount::RawBlock => Ok(Response::new(FindVolumeReply {
-                mount_type: MountType::Rawblock as i32,
+                volume_type: VolumeType::Rawblock as i32,
             })),
         }
     }

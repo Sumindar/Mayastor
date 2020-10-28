@@ -27,9 +27,9 @@ service MayastorNodePlugin {
   rpc FindVolume (FindVolumeRequest) returns (FindVolumeReply) {}
 }
 
-enum MountType {
-  MOUNT_TYPE_FILESYSTEM = 0; // File system mount
-  MOUNT_TYPE_RAWBLOCK = 1;   // Raw block device mount
+enum VolumeType {
+  VOLUME_TYPE_FILESYSTEM = 0; // File system mount
+  VOLUME_TYPE_RAWBLOCK = 1;   // Raw block device mount
 }
 // The request message containing ID of the volume to be frozen
 message FreezeFSRequest {
@@ -57,5 +57,5 @@ message FindVolumeRequest {
 
 // Message for response to a request for a volume
 message FindVolumeReply {
-  MountType mount_type = 1;
+  VolumeType volume_type = 1;
 }

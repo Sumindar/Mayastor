@@ -3,7 +3,7 @@
 //! freeze and unfreeze filesystem volumes provisioned by Mayastor
 use crate::{
     dev::{Device, DeviceError},
-    findmnt::findmnt_get_mountpaths,
+    findmnt,
     mount,
 };
 use snafu::{ResultExt, Snafu};
@@ -73,7 +73,7 @@ async fn fsfreeze(
                 })
             };
         } else {
-            let mountpaths = findmnt_get_mountpaths(&device_path).context(
+            let mountpaths = findmnt::get_mountpaths(&device_path).context(
                 InternalFailure {
                     volid: volume_id.to_string(),
                 },
@@ -113,7 +113,7 @@ pub async fn find_volume(volume_id: &str) -> Result<TypeOfMount, ServiceError> {
     {
         let device_path = device.devname();
         let mountpaths =
-            findmnt_get_mountpaths(&device_path).context(InternalFailure {
+            findmnt::get_mountpaths(&device_path).context(InternalFailure {
                 volid: volume_id.to_string(),
             })?;
         debug!("mountpaths : {:?}", mountpaths);

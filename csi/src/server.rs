@@ -45,14 +45,12 @@ mod error;
 mod filesystem_vol;
 mod findmnt;
 mod format;
-mod nodeplugin_svc;
 mod identity;
 mod match_dev;
 mod mount;
 mod node;
 mod nodeplugin_grpc;
-
-use snafu::Snafu;
+mod nodeplugin_svc;
 
 #[derive(Debug)]
 struct UnixStream(tokio::net::UnixStream);

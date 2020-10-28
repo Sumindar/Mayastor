@@ -15,12 +15,12 @@ pub struct DeviceMount {
 }
 
 #[derive(Debug)]
-struct FindmntFilter<'a> {
+struct Filter<'a> {
     key: &'a str,
     value: &'a str,
 }
 
-impl PartialEq<Value> for FindmntFilter<'_> {
+impl PartialEq<Value> for Filter<'_> {
     /// Special case the comparison for the source field returned
     /// by findmnt.
     fn eq(&self, value: &Value) -> bool {
@@ -95,7 +95,7 @@ fn jsonmap_to_hashmap(
 /// be more robust to future changes in findmnt.
 fn filter_findmnt(
     json_val: &serde_json::value::Value,
-    filter: &FindmntFilter,
+    filter: &Filter,
     results: &mut Vec<HashMap<String, String>>,
 ) {
     if let Some(json_array) = json_val.as_array() {
@@ -127,7 +127,7 @@ const FINDMNT_ARGS: [&str; 3] = ["-J", "-o", "SOURCE,TARGET,FSTYPE"];
 /// Execute the Linux utility findmnt, collect the json output,
 /// invoke the filter function and return the filtered results.
 fn findmnt(
-    params: FindmntFilter,
+    params: Filter,
 ) -> Result<Vec<HashMap<String, String>>, DeviceError> {
     let output = Command::new(FINDMNT).args(&FINDMNT_ARGS).output()?;
     if output.status.success() {
@@ -146,52 +146,50 @@ fn findmnt(
 /// Use the Linux utility findmnt to find the name of the device mounted at a
 /// directory or block special file, if any.
 /// mount_path is the path a device is mounted on.
-pub(crate) fn findmnt_get_devicepath(
+pub(crate) fn get_devicepath(
     mount_path: &str,
 ) -> Result<Option<String>, DeviceError> {
-    let tgt_filter = FindmntFilter {
+    let tgt_filter = Filter {
         key: TARGET_KEY,
         value: mount_path,
     };
-    match findmnt(tgt_filter) {
-        Ok(sources) => {
-            match sources.len() {
-                0 => Ok(None),
-                1 => {
-                    if let Some(devicepath) = sources[0].get(SOURCE_KEY) {
-                        Ok(Some(devicepath.to_string()))
-                    } else {
-                        Err(DeviceError {
-                            message: "missing source field".to_string(),
-                        })
-                    }
-                }
-                _ => {
-                    // should be impossible ...
-                    warn!(
-                        "multiple sources mounted on target {:?}->{}",
-                        sources, mount_path
-                    );
+    let sources = findmnt(tgt_filter)?;
+    {
+        match sources.len() {
+            0 => Ok(None),
+            1 => {
+                if let Some(devicepath) = sources[0].get(SOURCE_KEY) {
+                    Ok(Some(devicepath.to_string()))
+                } else {
                     Err(DeviceError {
-                        message: format!(
-                            "multiple devices mounted at {}",
-                            mount_path
-                        ),
+                        message: "missing source field".to_string(),
                     })
                 }
             }
+            _ => {
+                // should be impossible ...
+                warn!(
+                    "multiple sources mounted on target {:?}->{}",
+                    sources, mount_path
+                );
+                Err(DeviceError {
+                    message: format!(
+                        "multiple devices mounted at {}",
+                        mount_path
+                    ),
+                })
+            }
         }
-        Err(e) => Err(e),
     }
 }
 
 /// Use the Linux utility findmnt to find the mount paths for a block device,
 /// if any.
 /// device_path is the path to the device for example "/dev/sda1"
-pub(crate) fn findmnt_get_mountpaths(
+pub(crate) fn get_mountpaths(
     device_path: &str,
 ) -> Result<Vec<DeviceMount>, DeviceError> {
-    let dev_filter = FindmntFilter {
+    let dev_filter = Filter {
         key: SOURCE_KEY,
         value: device_path,
     };
